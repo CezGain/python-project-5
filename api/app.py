@@ -274,3 +274,8 @@ def connect_as_admin():
     except Exception:
         return {"error_msg": "wrong or missing arguments \"password\""}, 400
     return {"success": "you are connected as admin"}, 200
+
+@app.route("/users", methods=["GET"])
+def info_users():
+    return users
+
