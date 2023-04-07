@@ -39,3 +39,7 @@ def leave_room(user_id: int, room_id: int) -> bool:
     if response.status_code == 200:
         return True
     return False
+
+def users():
+    url = URL + "/users"
+    return requests.get(url).json()

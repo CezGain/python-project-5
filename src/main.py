@@ -1,3 +1,4 @@
+from numpy import mean
 from ydata.user import *
 from ydata.room import *
 import random
@@ -8,7 +9,7 @@ rooms_join = 0
 rooms_leave = 0
 count_admin = 0
 
-for i in range(500):
+for i in range(100):
     rooms = list_all_rooms()['rooms']
     random_user = random.randint(0, 14)
     random_room = random.randint(1, len('rooms'))
@@ -35,6 +36,9 @@ for i in range(500):
             list_one_room(random_room)
 
 
+
+
+
 print(list_all_rooms())
 print("---------------\n")
 
@@ -46,3 +50,8 @@ print("Nombre de rooms rejoints: ", rooms_join)
 print("Nombre de rooms quittées: ", rooms_leave, "\n")
 
 print("Nombre de passage admin: ", count_admin, "\n")
+
+liste_average_time = []
+for k in range (len(users())):
+    liste_average_time.append(users()[k]['time_connected_average']) 
+print("Moyenne de temps de conenction des utilisateurs: ", round(mean(liste_average_time)), 'heures')
