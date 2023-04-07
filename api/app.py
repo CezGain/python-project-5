@@ -2,7 +2,6 @@
 Launch from the project directory with
 > python -m flask --app api/app.py run
 """
-
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -11,33 +10,18 @@ app = Flask(__name__)
 @app.route("/")
 def hello_world():
     """
-    This hello world function is a simple example of endpoint.
+    Cette fonction hello world est un simple exemple de point de terminaison.
     """
-    return dict(message="Hello World!")
+    return {"message": "Hello World!"}
 
 
-list_rooms = [
-    {
-        "id": 1,
-        "places": 2,
-        "users_id": [1, 5],
-        "users_waiting": []
-    },
-    {
-        "id": 2,
-        "places": 3,
-        "users_id": [8, 3, 4],
-        "users_waiting": []
-    },
-    {
-        "id": 3,
-        "places": 5,
-        "users_id": [9, 6],
-        "users_waiting": []
-    },
+rooms = [
+    {"id": 1, "places": 2, "users_id": [1, 5], "users_waiting": []},
+    {"id": 2, "places": 3, "users_id": [8, 3, 4], "users_waiting": []},
+    {"id": 3, "places": 5, "users_id": [9, 6], "users_waiting": []},
 ]
 
-list_users = [
+users = [
     {
         "id": 0,
         "username": "admin",
@@ -128,36 +112,75 @@ list_users = [
         "time_connected_average": 918,
         "number_of_times_connected": 4
     },
+    {
+        "id": 10,
+        "username": "User10",
+        "creation_date": "2023-04-06 11:51:35",
+        "last_time_connected": "connected",
+        "since_connection": 4,
+        "time_connected_average": 8,
+        "number_of_times_connected": 4
+    },
+    {
+        "id": 11,
+        "username": "User11",
+        "creation_date": "2023-04-06 11:34:35",
+        "last_time_connected": "connected",
+        "since_connection": 734,
+        "time_connected_average": 518,
+        "number_of_times_connected": 4
+    },
+    {
+        "id": 12,
+        "username": "User12",
+        "creation_date": "2023-04-06 11:59:35",
+        "last_time_connected": "connected",
+        "since_connection": 1834,
+        "time_connected_average": 918,
+        "number_of_times_connected": 4
+    },
+    {
+        "id": 13,
+        "username": "User13",
+        "creation_date": "2023-04-06 11:56:35",
+        "last_time_connected": "connected",
+        "since_connection": 83,
+        "time_connected_average": 98,
+        "number_of_times_connected": 4
+    },
+    {
+        "id": 14,
+        "username": "User14",
+        "creation_date": "2023-04-06 11:55:35",
+        "last_time_connected": "connected",
+        "since_connection": 84,
+        "time_connected_average": 18,
+        "number_of_times_connected": 4
+    },
 ]
 
 
 @app.route("/rooms", methods=["GET", "POST"])
 def get_all_rooms():
     """
-    Return all rooms informations
+    Renvoie toutes les informations des salles
     """
-    return dict(
-        numbers_of_rooms=len(list_rooms),
-        rooms=list_rooms,
-    )
+    return {"numbers_of_rooms": len(rooms), "rooms": rooms}
 
 
-@app.route("/rooms/<int:id>", methods=["GET", "POST"])
-def get_room_info(id: int):
+@app.route("/rooms/<int:room_id>", methods=["GET", "POST"])
+def get_room_info(room_id):
     """
-    Return the information of one room or an error
+    Renvoie les informations d'une salle ou une erreur
     """
-    for room in list_rooms:
-        if room["id"] == id:
-            return room, 200
-    return dict(error_msg="room not found"), 404
+    room = next((r for r in rooms if r["id"] == room_id), None)
+    if room:
+        return room, 200
+    return {"error_msg": "room not found"}, 404
 
 
 @app.route("/room/join", methods=["POST"])
 def post_room_join():
-    """
-    Connect the user to the room, or return waiting times or an error
-    """
     input_data = request.json
     try:
         assert "room_id" in input_data
@@ -165,15 +188,15 @@ def post_room_join():
         assert "user_id" in input_data
         user_id = int(input_data["user_id"])
     except Exception:
-        return dict(error_msg="wrong or missing arguments \"room_id\" or \"user_id\""), 400
-    for i, room in enumerate(list_rooms):
+        return {"error_msg": "wrong or missing arguments \"room_id\" or \"user_id\""}, 400
+    for i, room in enumerate(rooms):
         if room["id"] == room_id:
             users_in_room = room["users_id"]
             if room["places"] <= len(users_in_room):
-                list_rooms[i]["users_waiting"].append(user_id)
+                rooms[i]["users_waiting"].append(user_id)
                 waiting_time = 0
                 for user in users_in_room:
-                    for user_info in list_users:
+                    for user_info in users:
                         if user == user_info["id"]:
                             time = user_info["time_connected_average"] - \
                                 user_info["since_connection"]
@@ -181,12 +204,12 @@ def post_room_join():
                                 time = 0
                             waiting_time += time
                             break
-                waiting_time //= len(list_users)
-                return dict(estimed_waiting=f"{waiting_time} seconds"), 200
+                waiting_time //= len(users)
+                return {"estimed_waiting": f"{waiting_time} seconds"}, 200
             else:
-                list_rooms[i]["users_id"].append(user_id)
-                return dict(joined="you have joined the room"), 200
-    return dict(not_found="room not found"), 404
+                rooms[i]["users_id"].append(user_id)
+                return {"joined": "you have joined the room"}, 200
+    return {"not_found": "room not found"}, 404
 
 
 @app.route("/room/leave", methods=["POST"])
@@ -198,19 +221,17 @@ def post_room_leave():
         assert "user_id" in input_data
         user_id = int(input_data["user_id"])
     except Exception:
-        return dict(error_msg="wrong or missing arguments \"room_id\" or \"user_id\""), 400
-    for i, room in enumerate(list_rooms):
+        return {"error_msg": "wrong or missing arguments \"room_id\" or \"user_id\""}, 400
+    for i, room in enumerate(rooms):
         if room["id"] == room_id:
-            for j, id in enumerate(room["users_id"]):
-                if id == user_id:
-                    list_rooms[i]["users_id"].pop(j)
-                    return dict(success="user left with success"), 200
-            for j, id in enumerate(room["users_waiting"]):
-                if id == user_id:
-                    list_rooms[i]["users_waiting"].pop(j)
-                    return dict(success="user left with success"), 200
-            return dict(not_found="user not found"), 404
-    return dict(not_found="room not found"), 404
+            if user_id in room["users_id"]:
+                rooms[i]["users_id"].remove(user_id)
+                return {"success": "user left with success"}, 200
+            if user_id in room["users_waiting"]:
+                rooms[i]["users_waiting"].remove(user_id)
+                return {"success": "user left with success"}, 200
+            return {"not_found": "user not found"}, 404
+    return {"not_found": "room not found"}, 404
 
 
 @app.route("/room/create", methods=["POST"])
@@ -220,13 +241,13 @@ def room_create():
         assert "places" in input_data
         nb_of_places = int(input_data["places"])
     except Exception:
-        return dict(error_msg="wrong or missing arguments \"places\""), 400
-    list_rooms.append({
-        "id": list_rooms[len(list_rooms) - 1]["id"] + 1,
+        return {"error_msg": "wrong or missing arguments \"places\""}, 400
+    rooms.append({
+        "id": rooms[-1]["id"] + 1,
         "places": nb_of_places,
         "users_id": []
     })
-    return dict(created="room create with success"), 200
+    return {"created": "room create with success"}, 200
 
 
 @app.route("/room/delete", methods=["POST"])
@@ -236,12 +257,13 @@ def room_delete():
         assert "id" in input_data
         id = int(input_data["id"])
     except Exception:
-        return dict(error_msg="wrong or missing arguments \"id\""), 400
-    for i, room in enumerate(list_rooms):
-        if room["id"] == id:
-            list_rooms.pop(i)
-            return dict(deleted="room delete with success"), 200
-    return dict(error_msg="ressource not found"), 404
+        return {"error_msg": "wrong or missing arguments \"id\""}, 400
+    room_to_remove = next(
+        (i for i, room in enumerate(rooms) if room["id"] == id), None)
+    if room_to_remove is not None:
+        rooms.pop(room_to_remove)
+        return {"deleted": "room delete with success"}, 200
+    return {"error_msg": "resource not found"}, 404
 
 
 @app.route("/admin/connection", methods=["POST"])
@@ -250,5 +272,5 @@ def connect_as_admin():
     try:
         assert "password" in input_data and input_data["password"] == "password"
     except Exception:
-        return dict(error_msg="wrong or missing arguments \"password\""), 400
-    return dict(success="you are connected as admin"), 200
+        return {"error_msg": "wrong or missing arguments \"password\""}, 400
+    return {"success": "you are connected as admin"}, 200
