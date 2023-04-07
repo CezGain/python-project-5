@@ -40,9 +40,9 @@ print("---------------\n")
 
 print("Nombre de rooms: ", len(list_all_rooms()['rooms']))
 print("Nombre de rooms crées: ", rooms_create)
-print("Nombre de rooms suprimés: ", rooms_delete, "\n")
+print("Nombre de rooms suprimées: ", rooms_delete, "\n")
 
-print("Nombre de rooms rejoint: ", rooms_join)
-print("Nombre de rooms leave: ", rooms_leave, "\n")
+print("Nombre de rooms rejoints: ", rooms_join)
+print("Nombre de rooms quittées: ", rooms_leave, "\n")
 
 print("Nombre de passage admin: ", count_admin, "\n")
